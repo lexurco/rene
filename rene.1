@@ -1,0 +1,51 @@
+.Dd July 07, 2022
+.Dt RENE 1
+.Os
+.Sh NAME
+.Nm rene
+.Op Fl ailnov
+.Nd rename files
+.Sh SYNOPSIS
+.Nm
+.Ar from to file ...
+.Sh DESCRIPTION
+The utility
+.Nm
+renames the supplied
+.Ar files
+by replacing the first occurence of
+.Ar from
+with
+.Ar to .
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl a
+Replace all occurences of
+.Ar from
+instead of only the first one. Overrides
+.Fl l .
+.It Fl i
+Prompt to stderr before overriding existing files. A renaming operation is only
+attempted if the response form stdin begins with the character
+.Dq y .
+.It Fl l
+Replace the last occurence of
+.Ar from
+instead of the first one.
+.It Fl n
+Don't actually rename any files. Useful with
+.Fl v .
+.It Fl o
+Don't override existing files. Disables
+.Fl i .
+.It Fl v
+Display the old and new names of each renamed file.
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr mv 1 ,
+.Xr rename 2
+.Sh AUTHORS
+.An Alexander Arkhipov Aq Mt src@mineeyes.cyou .

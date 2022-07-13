@@ -1,0 +1,8 @@
+VERSION = 0.1
+
+PREFIX = /usr/local
+MANPREFIX = $(PREFIX)/man
+
+CC = cc
+CFLAGS = -std=c99 -Wall -pedantic
+CPPFLAGS = -D_DEFAULT_SOURCE

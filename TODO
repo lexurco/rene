@@ -1,0 +1,3 @@
+- add options -b and -e for basic and extended regex;
+
+- add support for pledge(2);
