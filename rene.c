@@ -28,6 +28,21 @@ warn(const char *fmt, ...)
 	fprintf(stderr, ": %s\n", w);
 }
 
+void
+err(int eval, const char *fmt, ...)
+{
+	char *w = strerror(errno);
+	fputs("rene: ", stderr);
+	if (fmt != NULL) {
+		va_list argp;
+		va_start(argp, fmt);
+		vfprintf(stderr, fmt, argp);
+		va_end(argp);
+	}
+	fprintf(stderr, ": %s\n", w);
+	exit(eval);
+}
+
 int
 strrep(char *from, char *to, char *s, char **new)
 {
@@ -111,6 +126,11 @@ int
 main(int argc, char *argv[])
 {
 	char *from, *to;
+
+#ifdef __OpenBSD__
+	if (pledge("stdio cpath rpath", NULL) == -1)
+		err(1, "pledge");
+#endif
 
 	int c;
 	while ((c = getopt(argc, argv, "ailnov")) != -1) {
