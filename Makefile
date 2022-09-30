@@ -30,16 +30,13 @@ uninstall:
 dist: clean
 	mkdir -p rene-$(VERSION)
 	cp -rf TODO README Makefile config.mk t $(SRC) $(MAN) rene-$(VERSION)
-	tar -czf rene-$(VERSION).tar.gz rene-$(VERSION)
+	tar cf - rene-$(VERSION) | gzip >rene-$(VERSION).tar.gz
 	rm -rf rene-$(VERSION)
 
 clean:
-	-rm -f $(BIN) $(OBJ)
-	-rm -f rene-$(VERSION).tag.gz
-	-rm -f *.core
-	-rm -f vgcore.*
+	-rm -f $(BIN) $(OBJ) *.tar.gz *.core
 
-test:
-	-sh ./t/t.sh
+test: all
+	sh ./t/t.sh
 
 .PHONY: all install uninstall clean dist test
