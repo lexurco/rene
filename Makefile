@@ -29,7 +29,7 @@ uninstall:
 
 dist: clean
 	mkdir -p rene-$(VERSION)
-	cp -rf TODO README Makefile config.mk t $(SRC) $(MAN) rene-$(VERSION)
+	cp -rf CHANGES README Makefile config.mk t $(SRC) $(MAN) rene-$(VERSION)
 	tar cf - rene-$(VERSION) | gzip >rene-$(VERSION).tar.gz
 	rm -rf rene-$(VERSION)
 
