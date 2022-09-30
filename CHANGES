@@ -1,0 +1,8 @@
+0.2
+
+- Added support for pledge.
+- Improved portability.
+
+0.1
+
+Initial commit
