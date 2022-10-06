@@ -1,3 +1,8 @@
+0.2.1
+
+- The program now uses a pre-allocade buffer instead of malloc.
+- Rene now correctly returns >0 upon failing to rename a file.
+
 0.2
 
 - Added support for pledge.
