@@ -12,7 +12,10 @@
 #define O_REPLACELAST (1<<4)
 #define O_VERBOSE (1<<5)
 
+#define MAX_FILENAME 4096
+
 uint8_t opts;
+char new[MAX_FILENAME], *newe = new + MAX_FILENAME-1;
 
 void
 warn(const char *fmt, ...)
@@ -43,76 +46,68 @@ err(int eval, const char *fmt, ...)
 	exit(eval);
 }
 
-int
-strrep(char *from, char *to, char *s, char **new)
-{
-	char *p = strrchr(s, '/');
-	if (p) {
-		if (*++p == '\0')
-			return 0;
-	} else
-		p = s;
-	p = strstr(p, from);
-	if (!p)
-		return 0;
-	int fromlen = strlen(from);
-	int count = 1;
-	if (opts & O_REPLACELAST || opts & O_REPLACEALL) {
-		char *temp = p;
-		while (temp) {
-			temp = strstr(temp+fromlen, from);
-			count = (opts & O_REPLACEALL && temp) ? count + 1 :
-			    count;
-			p = (opts & O_REPLACELAST && temp) ? temp : p;
-		}
-	}
-
-	if (!(*new =
-	    malloc(strlen(s) + strlen(to)*count - fromlen*count + 1))) {
-		warn("malloc");
-		return 0;
-	}
-
-	char *newp = *new;
-	char *top = to;
-	while (p) {
-		for (; s != p; *newp++ = *s++)
-			;
-		for (; *top != '\0'; *newp++ = *top++)
-			;
-		s += fromlen;
-		p = opts & O_REPLACEALL ? strstr(s, from) : strchr(s, '\0');
-		p = p ? p : strchr(s, '\0');
-		for (; s != p; *newp++ = *s++)
-			;
-		p = (*p == '\0') ? NULL : p;
-		top = to;
-	}
-	*newp = '\0';
-	return 1;
-}
-
-int
-ask(char *from, char *to)
-{
-	fprintf(stderr, "replace %s with %s? ", from, to);
-	return getchar() == 'y';
-}
-
 void
+errx(int eval, const char *fmt, ...)
+{
+	fputs("rene: ", stderr);
+	if (fmt != NULL) {
+		va_list argp;
+		va_start(argp, fmt);
+		vfprintf(stderr, fmt, argp);
+		va_end(argp);
+	}
+	fputc('\n', stderr);
+	exit(eval);
+}
+
+int
 ren(char *from, char *to, char *f)
 {
-	int yes = 1;
-	char *new = NULL;
-	if (!strrep(from, to, f, &new))
-		return;
-	if ((opts & O_NOOVERRIDE || opts & O_INTERACTIVE) &&
-	    access(new, F_OK) == 0)
-		yes = opts & O_NOOVERRIDE ? 0 : ask(f, new);
-	if (yes && !(opts & O_NOACT) && !(yes += rename(f, new)))
+	int y = !(opts & O_NOOVERRIDE);
+
+	char *p = strrchr(f, '/');
+	if (p) {
+		if (*++p == '\0')
+			return 1;
+	} else
+		p = f;
+	if (!(p = strstr(p, from)))
+		return 1;
+	int fromlen = strlen(from);
+	if (opts & O_REPLACELAST)
+		for(char *x; (x = strstr(p+fromlen, from)); p = x)
+			;
+
+	char *fp = f;
+	char *newp = new;
+	char *top = to;
+	for (;;) {
+		for (; fp != p; *newp++ = *fp++)
+			if (newp == newe)
+toolong:
+				errx(1, "%s: final file name is too long", f);
+		if (!*fp)
+			break;
+		for (top = to; *top != '\0'; *newp++ = *top++)
+			if (newp == newe)
+				goto toolong;
+		fp += fromlen;
+		if (!(opts & O_REPLACEALL) || !(p = strstr(fp, from)))
+			p = strchr(fp, '\0');
+	}
+	*newp = '\0';
+
+	if (opts & O_INTERACTIVE && access(new, F_OK) == 0) {
+		fprintf(stderr, "replace %s with %s? ", from, to);
+		y = getchar() == 'y';
+	}
+	if (y && !(opts & O_NOACT) && !(y += rename(f, new))) {
 		warn("rename");
-	if (opts & O_VERBOSE && yes)
+		return 0;
+	}
+	if (opts & O_VERBOSE && y)
 		printf("%s -> %s\n", f, new);
+	return 1;
 }
 
 void
@@ -125,14 +120,11 @@ usage(void)
 int
 main(int argc, char *argv[])
 {
-	char *from, *to;
-
+	int c, ret = 0;
 #ifdef __OpenBSD__
 	if (pledge("stdio cpath rpath", NULL) == -1)
 		err(1, "pledge");
 #endif
-
-	int c;
 	while ((c = getopt(argc, argv, "ailnov")) != -1) {
 		switch (c) {
 		case 'a':
@@ -160,11 +152,10 @@ main(int argc, char *argv[])
 	argc -= optind;
 	argv += optind;
 
-	if (argc < 3)
+	if (argc < 3 || !argv[0] || !argv[1] || !argv[0][0])
 		usage();
-	from = argv[0];
-	to = argv[1];
 	for (int i = 2; i < argc; i++)
-		ren(from, to, argv[i]);
-	return 0;
+		if (!ren(argv[0], argv[1], argv[i]))
+			ret = 1;
+	return ret;
 }
