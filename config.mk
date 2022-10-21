@@ -2,6 +2,8 @@ VERSION = 0.2.2
 
 PREFIX = /usr/local
 MANPREFIX = $(PREFIX)/man
+# Linux
+#MANPREFIX = $(PREFIX)/share/man
 
 CC = cc
 CFLAGS = -std=c99 -Wall -pedantic
