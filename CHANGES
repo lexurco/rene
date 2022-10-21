@@ -1,3 +1,7 @@
+0.2.3
+
+Improved Makefile's portability for Linux.
+
 0.2.2
 
 Ensured portability by explicitly including stdint.h.
