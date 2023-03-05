@@ -34,7 +34,7 @@ dist: clean
 	rm -rf rene-$(VERSION)
 
 clean:
-	-rm -f $(BIN) $(OBJ) *.tar.gz *.core
+	-rm -f $(BIN) $(OBJ) *.tar.gz *.core t/*.out t/*.err
 
 test: all
 	sh ./t/t.sh

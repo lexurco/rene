@@ -6,16 +6,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#define O_INTERACTIVE 1
-#define O_NOACT (1<<1)
-#define O_NOOVERRIDE (1<<2)
-#define O_REPLACEALL (1<<3)
-#define O_REPLACELAST (1<<4)
-#define O_VERBOSE (1<<5)
-
 #define MAX_FILENAME 4096
 
-uint8_t opts;
+int aflag = 0;
+int iflag = 0;
+int lflag = 0;
+int nflag = 0;
+int oflag = 0;
+int vflag = 0;
 char new[MAX_FILENAME], *newe = new + MAX_FILENAME-1;
 
 void
@@ -64,7 +62,7 @@ errx(int eval, const char *fmt, ...)
 int
 ren(char *from, char *to, char *f)
 {
-	int y = !(opts & O_NOOVERRIDE);
+	int y = !oflag;
 
 	char *p = strrchr(f, '/');
 	if (p) {
@@ -75,7 +73,7 @@ ren(char *from, char *to, char *f)
 	if (!(p = strstr(p, from)))
 		return 1;
 	int fromlen = strlen(from);
-	if (opts & O_REPLACELAST)
+	if (lflag)
 		for(char *x; (x = strstr(p+fromlen, from)); p = x)
 			;
 
@@ -93,20 +91,20 @@ toolong:
 			if (newp == newe)
 				goto toolong;
 		fp += fromlen;
-		if (!(opts & O_REPLACEALL) || !(p = strstr(fp, from)))
+		if (!aflag || !(p = strstr(fp, from)))
 			p = strchr(fp, '\0');
 	}
 	*newp = '\0';
 
-	if (opts & O_INTERACTIVE && access(new, F_OK) == 0) {
+	if (iflag && access(new, F_OK) == 0) {
 		fprintf(stderr, "replace %s with %s? ", from, to);
 		y = getchar() == 'y';
 	}
-	if (y && !(opts & O_NOACT) && !(y += rename(f, new))) {
+	if (y && !nflag && !(y += rename(f, new))) {
 		warn("rename");
 		return 0;
 	}
-	if (opts & O_VERBOSE && y)
+	if (vflag && y)
 		printf("%s -> %s\n", f, new);
 	return 1;
 }
@@ -129,22 +127,22 @@ main(int argc, char *argv[])
 	while ((c = getopt(argc, argv, "ailnov")) != -1) {
 		switch (c) {
 		case 'a':
-			opts |= O_REPLACEALL;
+			aflag = 1;
 			break;
 		case 'i':
-			opts |= O_INTERACTIVE;
+			iflag = 1;
 			break;
 		case 'l':
-			opts |= O_REPLACELAST;
+			lflag = 1;
 			break;
 		case 'n':
-			opts |= O_NOACT;
+			nflag = 1;
 			break;
 		case 'o':
-			opts |= O_NOOVERRIDE;
+			oflag = 1;
 			break;
 		case 'v':
-			opts |= O_VERBOSE;
+			vflag = 1;
 			break;
 		default:
 			usage();
