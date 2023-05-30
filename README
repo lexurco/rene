@@ -1,7 +1,5 @@
 rene is a batch-renaming tool similar to rename from util-linux, but for all
-Unix-likes. To install, edit config.mk if necessary, and then run make and
-make install:
+Unix-likes. To install, run make and make install:
 
-	$ $EDITOR config.mk
 	$ make
 	# make install
