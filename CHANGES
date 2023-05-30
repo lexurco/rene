@@ -1,3 +1,8 @@
+0.3
+
+Removed config.mk in favour of variables. Should make building, and
+especially packaging simpler.
+
 0.2.4
 
 Minor maintenance.
